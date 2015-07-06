@@ -3,23 +3,47 @@
 import pygame
 import time
 import sys
+import random
 
 pygame.init()
-pygame.display.set_caption("title")
-screen = pygame.display.set_mode((600, 600), 0, 32)
-
-x0 = [0, 0]
-x1 = [10, 10]
-
+pygame.display.set_caption("Numbers")
+screen = pygame.display.set_mode((351, 600), 0, 32)
+size = 7
+cellSize = 50
+gameTable = []
+for i in range(size):
+    gameTable.append([0] * size)
+currentNumber = random.randint(1, size)
+moveCount = 10
+score = 0
+bestScore = 0
+myFont = pygame.font.SysFont("Monospace", 30)
 
 def update():
-    x0[0] += 1
-    x1[0] += 1
+    return
 
 
 def draw():
     screen.fill((0, 0, 0))
-    pygame.draw.line(screen, (255, 255, 255), x0, x1)
+    for i in range(size):
+        for j in range(size):
+            pygame.draw.rect(screen, (255, 255, 255), (i * cellSize, j * cellSize + 3 * cellSize, cellSize, cellSize),
+                             2)
+            text = myFont.render(str(gameTable[i][j]), 1, (250, 250, 250))
+            screen.blit(text, (i * cellSize, j * cellSize + 3 * cellSize, cellSize, cellSize))
+
+    labelMove = myFont.render("Move", 1, (250, 250, 250))
+    screen.blit(labelMove, (0, 0, 351 / 3, cellSize))
+    screen.blit(myFont.render(str(moveCount), 1, (250, 250, 250)), (0, cellSize, 351 / 3, cellSize * 2))
+
+    labelScore = myFont.render("Score", 1, (250, 250, 250))
+    screen.blit(labelScore, (351 / 3, 0, 351 / 3, cellSize))
+    screen.blit(myFont.render(str(score), 1, (250, 250, 250)), (351 / 3, cellSize, 351 / 3, cellSize * 2))
+
+    labelRecord = myFont.render("Record", 1, (250, 250, 250))
+    screen.blit(labelRecord, (351 * 2 / 3, 0, 351 / 3, cellSize))
+    screen.blit(myFont.render(str(bestScore), 1, (250, 250, 250)), (351 * 2 / 3, cellSize, 351 / 3, cellSize * 2))
+
     pygame.display.flip()
 
 
@@ -34,4 +58,3 @@ while True:
     update()
     draw()
     time.sleep(0.05)
-
