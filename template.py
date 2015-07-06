@@ -19,6 +19,7 @@ score = 0
 bestScore = 0
 myFont = pygame.font.SysFont("Monospace", 30)
 
+
 def update():
     return
 
@@ -44,6 +45,10 @@ def draw():
     screen.blit(labelRecord, (351 * 2 / 3, 0, 351 / 3, cellSize))
     screen.blit(myFont.render(str(bestScore), 1, (250, 250, 250)), (351 * 2 / 3, cellSize, 351 / 3, cellSize * 2))
 
+    labelNext = myFont.render("Next", 1, (250, 250, 250))
+    screen.blit(labelNext, (0, cellSize * 2, 351 / 3, cellSize * 3))
+    screen.blit(myFont.render(str(currentNumber), 1, (250, 250, 250)), (351 / 3, cellSize * 2, cellSize, cellSize * 3))
+
     pygame.display.flip()
 
 
@@ -55,6 +60,17 @@ while True:
         if event.type == pygame.KEYUP and event.key == pygame.K_ESCAPE:
             pygame.quit()
             sys.exit(0)
+        if event.type == pygame.MOUSEBUTTONDOWN:
+            i = (int) (event.pos[0] / 50)
+            j = size - 1
+            while gameTable[i][j] != 0 and j >= 0:
+                j -= 1
+            if gameTable[i][j] == 0:
+                gameTable[i][j] = currentNumber
+                currentNumber = random.randint(1, size)
+                moveCount -= 1
+
+
     update()
     draw()
     time.sleep(0.05)
