@@ -20,6 +20,11 @@ score = 0
 bestScore = 0
 myFont = pygame.font.SysFont("Monospace", 30)
 colorWhite = (255, 255, 255)
+colorRed = (255, 0, 0)
+colorGreen = (0, 255, 0)
+colorBlue = (0, 0, 255)
+endGame = False
+
 
 def AddNumber(x):
     global currentNumber
@@ -34,10 +39,35 @@ def AddNumber(x):
         moveCount -= 1
 
 
+def AddRow():
+    global moveCount
+    for i in range(size):
+        j = 1
+        while j < size:
+            gameTable[i][j - 1] = gameTable[i][j]
+            j += 1
+        gameTable[i][size - 1] = 2 * size + random.randint(1, size)
+    moveCount = 10
+
+
+def EndBeforeNewRow():
+    elCount = 0
+    for i in range(size):
+        if gameTable[i][0] != 0:
+            elCount += 1
+    return elCount == size
+
+
+def EndAfterNewRow():
+    elCount = 0
+    for i in range(size):
+        if gameTable[i][0] != 0:
+            elCount += 1
+    return elCount != 0
+
+
 def Delete():
-
     global score
-
     rowElCount = [0 for i in range(size)]
     colElCount = [0 for i in range(size)]
     delTable = []
@@ -62,6 +92,14 @@ def Delete():
         for j in range(size):
             if delTable[i][j] != 0:
                 gameTable[i][j] = 0
+                if i > 0 and gameTable[i - 1][j] > size:
+                    gameTable[i - 1][j] -= size
+                if i < size - 1 and gameTable[i + 1][j] > size:
+                    gameTable[i + 1][j] -= size
+                if j > 0 and gameTable[i][j - 1] > size:
+                    gameTable[i][j - 1] -= size
+                if j < size - 1 and gameTable[i][j + 1] > size:
+                    gameTable[i][j + 1] -= size
                 score += 1
 
     for j in range(size):
@@ -86,18 +124,26 @@ def Restart():
     moveCount = 10
 
 
-def update():
-    return
-
-
-def draw():
+def Draw():
     screen.fill((0, 0, 0))
     for i in range(size):
         for j in range(size):
             pygame.draw.rect(screen, colorWhite, (i * cellSize, j * cellSize + 3 * cellSize, cellSize, cellSize),
                              2)
             if gameTable[i][j] != 0:
-                text = myFont.render(str(gameTable[i][j]), 1, colorWhite)
+                if gameTable[i][j] <= size:
+                    pygame.draw.rect(screen, colorRed, (i * cellSize + 5, j * cellSize + 3 * cellSize + 5, cellSize - 10, cellSize - 10),
+                                     0)
+                    text = myFont.render(str(gameTable[i][j]), 1, colorWhite)
+                else:
+                    if gameTable[i][j] <= 2*size:
+                        pygame.draw.rect(screen, colorGreen, (i * cellSize + 5, j * cellSize + 3 * cellSize + 5, cellSize - 10, cellSize - 10),
+                                         0)
+                        text = myFont.render("!", 1, colorWhite)
+                    else:
+                        pygame.draw.rect(screen, colorBlue, (i * cellSize + 5, j * cellSize + 3 * cellSize + 5, cellSize - 10, cellSize - 10),
+                                         0)
+                        text = myFont.render("!!", 1, colorWhite)
                 screen.blit(text, (i * cellSize, j * cellSize + 3 * cellSize, cellSize, cellSize))
 
     labelMove = myFont.render("Move", 1, colorWhite)
@@ -138,13 +184,13 @@ while True:
         if event.type == pygame.MOUSEBUTTONDOWN:
             if event.button == 1:
                 if 10 * cellSize > event.pos[1] > 3 * cellSize:
-                    AddNumber(event.pos[0])
+                    if not endGame:
+                        AddNumber(event.pos[0])
                 if 2 * cellSize < event.pos[0] < 5 * cellSize and 10.4 * cellSize < event.pos[1] < 11.4 * cellSize:
                     Restart()
     Delete()
-    if moveCount == 0:
-        moveCount = 10
-
-    update()
-    draw()
+    endGame = EndBeforeNewRow() or (moveCount == 0 and EndAfterNewRow())
+    if not endGame and moveCount == 0:
+        AddRow()
+    Draw()
     time.sleep(0.05)
