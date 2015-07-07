@@ -61,14 +61,15 @@ while True:
             pygame.quit()
             sys.exit(0)
         if event.type == pygame.MOUSEBUTTONDOWN:
-            i = (int) (event.pos[0] / 50)
-            j = size - 1
-            while gameTable[i][j] != 0 and j >= 0:
-                j -= 1
-            if gameTable[i][j] == 0:
-                gameTable[i][j] = currentNumber
-                currentNumber = random.randint(1, size)
-                moveCount -= 1
+            if event.pos[1] < 10 * cellSize and event.pos[1] > 3 * cellSize:
+                i = (int) (event.pos[0] / cellSize)
+                j = size - 1
+                while gameTable[i][j] != 0 and j >= 0:
+                    j -= 1
+                if gameTable[i][j] == 0:
+                    gameTable[i][j] = currentNumber
+                    currentNumber = random.randint(1, size)
+                    moveCount -= 1
 
 
     update()
