@@ -23,6 +23,9 @@ colorWhite = (255, 255, 255)
 colorRed = (255, 0, 0)
 colorGreen = (0, 255, 0)
 colorBlue = (0, 0, 255)
+palette = [(255, 102, 102), (255, 178, 102), (255, 255, 102), (102, 255, 102), (102, 255, 255), (102, 102, 255), (178, 102, 255)]
+
+
 endGame = False
 
 
@@ -132,11 +135,11 @@ def Draw():
                              2)
             if gameTable[i][j] != 0:
                 if gameTable[i][j] <= size:
-                    pygame.draw.rect(screen, colorRed, (i * cellSize + 5, j * cellSize + 3 * cellSize + 5, cellSize - 10, cellSize - 10),
+                    pygame.draw.rect(screen, palette[gameTable[i][j] - 1], (i * cellSize + 5, j * cellSize + 3 * cellSize + 5, cellSize - 10, cellSize - 10),
                                      0)
                     text = myFont.render(str(gameTable[i][j]), 1, colorWhite)
                 else:
-                    if gameTable[i][j] <= 2*size:
+                    if gameTable[i][j] <= 2 * size:
                         pygame.draw.rect(screen, colorGreen, (i * cellSize + 5, j * cellSize + 3 * cellSize + 5, cellSize - 10, cellSize - 10),
                                          0)
                         text = myFont.render("!", 1, colorWhite)
