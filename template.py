@@ -69,8 +69,8 @@ def EndAfterNewRow():
     return elCount != 0
 
 
-def Delete():
-    global score
+def CreateDelTable():
+    notNull = False
     rowElCount = [0 for i in range(size)]
     colElCount = [0 for i in range(size)]
     delTable = []
@@ -90,7 +90,14 @@ def Delete():
         for j in range(size):
             if gameTable[i][j] != 0 and (gameTable[i][j] == rowElCount[i] or gameTable[i][j] == colElCount[j]):
                 delTable[i][j] = 1
+                notNull = True
 
+    return notNull, delTable
+
+
+
+def Delete(delTable):
+    global score
     for i in range(size):
         for j in range(size):
             if delTable[i][j] != 0:
@@ -191,7 +198,10 @@ while True:
                         AddNumber(event.pos[0])
                 if 2 * cellSize < event.pos[0] < 5 * cellSize and 10.4 * cellSize < event.pos[1] < 11.4 * cellSize:
                     Restart()
-    Delete()
+    isDel = CreateDelTable()
+    if isDel[0]:
+        time.sleep(0.1)
+        Delete(isDel[1])
     endGame = EndBeforeNewRow() or (moveCount == 0 and EndAfterNewRow())
     if not endGame and moveCount == 0:
         AddRow()
