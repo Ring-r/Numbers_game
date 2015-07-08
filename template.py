@@ -12,7 +12,7 @@ screen = pygame.display.set_mode(screenSize, 0, 32)
 size = 7
 cellSize = 50
 gameTable = []
-for i in range(size):
+for x in range(size):
     gameTable.append([0] * size)
 currentNumber = random.randint(1, size)
 moveCount = 10
@@ -30,12 +30,9 @@ endGame = False
 
 
 def AddNumber(x):
-    global currentNumber
-    global moveCount
+    global currentNumber, moveCount
     i = int(x / cellSize)
-    j = size - 1
-    while gameTable[i][j] != 0 and j >= 0:
-        j -= 1
+    j = 0
     if gameTable[i][j] == 0:
         gameTable[i][j] = currentNumber
         currentNumber = random.randint(1, size)
@@ -113,19 +110,19 @@ def Delete(delTable):
                 score += 1
 
 def ShiftDown():
+    repeat = False
     for j in range(size):
         i = size - 2
         while i >= 0:
             if gameTable[j][i] != 0 and gameTable[j][i + 1] == 0:
                 gameTable[j][i + 1] = gameTable[j][i]
                 gameTable[j][i] = 0
+                repeat = True
             i -= 1
-
+    return repeat
 
 def Restart():
-    global score
-    global bestScore
-    global moveCount
+    global score, bestScore, moveCount
     for i in range(size):
         for j in range(size):
             gameTable[i][j] = 0
@@ -146,16 +143,17 @@ def Draw():
                     pygame.draw.rect(screen, palette[gameTable[i][j] - 1], (i * cellSize + 5, j * cellSize + 3 * cellSize + 5, cellSize - 10, cellSize - 10),
                                      0)
                     text = myFont.render(str(gameTable[i][j]), 1, colorWhite)
+                    screen.blit(text, (i * cellSize, j * cellSize + 3 * cellSize, cellSize, cellSize))
                 else:
                     if gameTable[i][j] <= 2 * size:
                         pygame.draw.rect(screen, colorGreen, (i * cellSize + 5, j * cellSize + 3 * cellSize + 5, cellSize - 10, cellSize - 10),
                                          0)
-                        text = myFont.render("!", 1, colorWhite)
+                        DrawFill_2(i, j, 5)
                     else:
                         pygame.draw.rect(screen, colorBlue, (i * cellSize + 5, j * cellSize + 3 * cellSize + 5, cellSize - 10, cellSize - 10),
                                          0)
-                        text = myFont.render("!!", 1, colorWhite)
-                screen.blit(text, (i * cellSize, j * cellSize + 3 * cellSize, cellSize, cellSize))
+                        DrawFill_1(i, j, 5)
+                        DrawFill_2(i, j, 5)
 
     labelMove = myFont.render("Move", 1, colorWhite)
     screen.blit(labelMove, (0, 0, screenSize[0] / 3, cellSize))
@@ -184,6 +182,56 @@ def Draw():
     pygame.display.flip()
 
 
+def DrawFill_1(x, y, size):
+    for k in range(size):
+        r = k * (cellSize - 10) / size
+        pygame.draw.line(screen, colorWhite, (x * cellSize + 5 + r, (y + 3) * cellSize + 5), ((x + 1) * cellSize - 5, (y + 4) * cellSize - r - 5), 2)
+        pygame.draw.line(screen, colorWhite, (x * cellSize + 5, (y + 3) * cellSize + 5 + r), ((x + 1) * cellSize - r - 5, (y + 4) * cellSize - 5), 2)
+
+
+def DrawFill_2(x, y, size):
+    for k in range(size):
+        r = (size - k) * (cellSize - 10) / size
+        pygame.draw.line(screen, colorWhite, (x * cellSize - 5 + r, (y + 3) * cellSize + 5), (x * cellSize + 5, (y + 3) * cellSize - 5 + r), 2)
+        pygame.draw.line(screen, colorWhite, ((x + 1) * cellSize - 5, (y + 4) * cellSize + 5 - r), ((x + 1) * cellSize + 5 - r, (y + 4) * cellSize - 5), 2)
+
+Update = None
+pos = None
+
+def UpdateAdd():
+    global Update, pos
+    if pos is not None:
+        if 10 * cellSize > pos[1] > 3 * cellSize:
+            if not endGame:
+                AddNumber(pos[0])
+                Update = UpdateShift
+    pos = None
+
+
+def UpdateDel():
+    global Update
+    isDel = CreateDelTable()
+    if isDel[0]:
+        Delete(isDel[1])
+        Update = UpdateShift
+    else:
+        Update = UpdateRow
+
+def UpdateRow():
+    global Update, endGame
+    endGame = EndBeforeNewRow() or (moveCount == 0 and EndAfterNewRow())
+    if not endGame and moveCount == 0:
+        AddRow()
+        Update = UpdateDel
+    else:
+        Update = UpdateAdd
+
+def UpdateShift():
+    global Update
+    if not ShiftDown():
+        Update = UpdateDel
+
+Update = UpdateAdd
 while True:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
@@ -194,18 +242,10 @@ while True:
             sys.exit(0)
         if event.type == pygame.MOUSEBUTTONDOWN:
             if event.button == 1:
-                if 10 * cellSize > event.pos[1] > 3 * cellSize:
-                    if not endGame:
-                        AddNumber(event.pos[0])
+                e = True
+                pos = event.pos
                 if 2 * cellSize < event.pos[0] < 5 * cellSize and 10.4 * cellSize < event.pos[1] < 11.4 * cellSize:
                     Restart()
-    isDel = CreateDelTable()
-    if isDel[0]:
-        time.sleep(0.1)
-        Delete(isDel[1])
-    ShiftDown()
-    endGame = EndBeforeNewRow() or (moveCount == 0 and EndAfterNewRow())
-    if not endGame and moveCount == 0:
-        AddRow()
+    Update()
     Draw()
     time.sleep(0.05)
