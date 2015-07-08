@@ -112,6 +112,7 @@ def Delete(delTable):
                     gameTable[i][j + 1] -= size
                 score += 1
 
+def ShiftDown():
     for j in range(size):
         i = size - 2
         while i >= 0:
@@ -202,6 +203,7 @@ while True:
     if isDel[0]:
         time.sleep(0.1)
         Delete(isDel[1])
+    ShiftDown()
     endGame = EndBeforeNewRow() or (moveCount == 0 and EndAfterNewRow())
     if not endGame and moveCount == 0:
         AddRow()
