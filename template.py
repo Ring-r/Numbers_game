@@ -23,8 +23,8 @@ colorWhite = (255, 255, 255)
 colorRed = (255, 0, 0)
 colorGreen = (0, 255, 0)
 colorBlue = (0, 0, 255)
+colorBlack = (0, 0, 0)
 palette = [(255, 51, 51), (255, 153, 51), (255, 255, 51), (0, 255, 128), (51, 153, 255), (51, 51, 255), (255, 51, 153)]
-
 
 endGame = False
 
@@ -95,7 +95,6 @@ def CreateDelTable():
     return notNull, delTable
 
 
-
 def Delete(delTable):
     global score
     for i in range(size):
@@ -112,6 +111,7 @@ def Delete(delTable):
                     gameTable[i][j + 1] -= size
                 score += 1
 
+
 def ShiftDown():
     repeat = False
     for j in range(size):
@@ -124,8 +124,9 @@ def ShiftDown():
             i -= 1
     return repeat
 
+
 def Restart():
-    global score, bestScore, moveCount
+    global score, bestScore, moveCount, endGame
     for i in range(size):
         for j in range(size):
             gameTable[i][j] = 0
@@ -133,29 +134,34 @@ def Restart():
         bestScore = score
     score = 0
     moveCount = 10
+    endGame = False
 
 
 def Draw():
-    screen.fill((0, 0, 0))
+    screen.fill(colorBlack)
     for i in range(size):
         for j in range(size):
             pygame.draw.rect(screen, colorWhite, (i * cellSize, j * cellSize + 3 * cellSize, cellSize, cellSize),
                              2)
             if gameTable[i][j] != 0:
                 if gameTable[i][j] <= size:
-                    pygame.draw.rect(screen, palette[gameTable[i][j] - 1], (i * cellSize + 5, j * cellSize + 3 * cellSize + 5, cellSize - 9, cellSize - 9),
+                    pygame.draw.rect(screen, palette[gameTable[i][j] - 1],
+                                     (i * cellSize + 5, j * cellSize + 3 * cellSize + 5, cellSize - 9, cellSize - 9),
                                      0)
                     text = myFont.render(str(gameTable[i][j]), 1, colorWhite)
                     screen.blit(text, (i * cellSize, j * cellSize + 3 * cellSize, cellSize, cellSize))
                 else:
                     if gameTable[i][j] <= 2 * size:
-                        pygame.draw.rect(screen, colorWhite, (i * cellSize + 5, j * cellSize + 3 * cellSize + 5, cellSize - 9, cellSize - 9),
+                        pygame.draw.rect(screen, colorWhite, (
+                            i * cellSize + 5, j * cellSize + 3 * cellSize + 5, cellSize - 9, cellSize - 9),
                                          0)
 
                     else:
-                        pygame.draw.rect(screen, colorWhite, (i * cellSize + 5, j * cellSize + 3 * cellSize + 5, cellSize - 9, cellSize - 9),
+                        pygame.draw.rect(screen, colorWhite, (
+                            i * cellSize + 5, j * cellSize + 3 * cellSize + 5, cellSize - 9, cellSize - 9),
                                          2)
-                        pygame.draw.rect(screen, colorWhite, (i * cellSize + 10, j * cellSize + 3 * cellSize + 10, cellSize - 18, cellSize - 18),
+                        pygame.draw.rect(screen, colorWhite, (
+                            i * cellSize + 10, j * cellSize + 3 * cellSize + 10, cellSize - 18, cellSize - 18),
                                          0)
 
     labelMove = myFont.render("Move", 1, colorWhite)
@@ -180,8 +186,9 @@ def Draw():
         pygame.draw.rect(screen, colorWhite, (screenSize[0] / 3 + 10, cellSize * 2 + 10, cellSize - 18, cellSize - 18),
                          0)
     else:
-        pygame.draw.rect(screen, palette[currentNumber - 1], (screenSize[0] / 3 + 5, cellSize * 2 + 5, cellSize - 9, cellSize - 9),
-                     0)
+        pygame.draw.rect(screen, palette[currentNumber - 1],
+                         (screenSize[0] / 3 + 5, cellSize * 2 + 5, cellSize - 9, cellSize - 9),
+                         0)
         screen.blit(myFont.render(str(currentNumber), 1, colorWhite),
                     (screenSize[0] / 3, cellSize * 2, cellSize, cellSize))
 
@@ -190,11 +197,27 @@ def Draw():
     pygame.draw.rect(screen, colorWhite, (2 * cellSize, 10.4 * cellSize, 3 * cellSize, cellSize),
                      2)
 
+    if endGame:
+        DrawEndGame()
+
     pygame.display.flip()
+
+
+def DrawEndGame():
+    overlay = pygame.Surface((351, 200))
+    overlay.set_alpha(200)
+    overlay.fill((255, 255, 255))
+    screen.blit(overlay, (0, screenSize[1] / 3))
+
+    text = myFont.render("Game Over!", 1, colorBlack, colorWhite)
+    loc = text.get_rect()
+    loc.center = screen.get_rect().center
+    screen.blit(text, loc)
 
 
 Update = None
 pos = None
+
 
 def UpdateAdd():
     global Update, pos
@@ -215,6 +238,7 @@ def UpdateDel():
     else:
         Update = UpdateRow
 
+
 def UpdateRow():
     global Update, endGame
     endGame = EndBeforeNewRow() or (moveCount == 0 and EndAfterNewRow())
@@ -224,10 +248,12 @@ def UpdateRow():
     else:
         Update = UpdateAdd
 
+
 def UpdateShift():
     global Update
     if not ShiftDown():
         Update = UpdateDel
+
 
 Update = UpdateAdd
 while True:
@@ -246,4 +272,5 @@ while True:
                     Restart()
     Update()
     Draw()
+
     time.sleep(0.05)
