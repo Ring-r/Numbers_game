@@ -23,7 +23,7 @@ colorWhite = (255, 255, 255)
 colorRed = (255, 0, 0)
 colorGreen = (0, 255, 0)
 colorBlue = (0, 0, 255)
-palette = [(255, 102, 102), (255, 178, 102), (255, 255, 102), (102, 255, 102), (102, 255, 255), (102, 102, 255), (178, 102, 255)]
+palette = [(255, 51, 51), (255, 153, 51), (255, 255, 51), (0, 255, 128), (51, 153, 255), (51, 51, 255), (255, 51, 153)]
 
 
 endGame = False
@@ -35,7 +35,10 @@ def AddNumber(x):
     j = 0
     if gameTable[i][j] == 0:
         gameTable[i][j] = currentNumber
-        currentNumber = random.randint(1, size)
+        if score > 0 and score % 10 == 0:
+            currentNumber = 2 * size + random.randint(1, size)
+        else:
+            currentNumber = random.randint(1, size)
         moveCount -= 1
 
 
@@ -140,20 +143,20 @@ def Draw():
                              2)
             if gameTable[i][j] != 0:
                 if gameTable[i][j] <= size:
-                    pygame.draw.rect(screen, palette[gameTable[i][j] - 1], (i * cellSize + 5, j * cellSize + 3 * cellSize + 5, cellSize - 10, cellSize - 10),
+                    pygame.draw.rect(screen, palette[gameTable[i][j] - 1], (i * cellSize + 5, j * cellSize + 3 * cellSize + 5, cellSize - 9, cellSize - 9),
                                      0)
                     text = myFont.render(str(gameTable[i][j]), 1, colorWhite)
                     screen.blit(text, (i * cellSize, j * cellSize + 3 * cellSize, cellSize, cellSize))
                 else:
                     if gameTable[i][j] <= 2 * size:
-                        pygame.draw.rect(screen, colorGreen, (i * cellSize + 5, j * cellSize + 3 * cellSize + 5, cellSize - 10, cellSize - 10),
+                        pygame.draw.rect(screen, colorWhite, (i * cellSize + 5, j * cellSize + 3 * cellSize + 5, cellSize - 9, cellSize - 9),
                                          0)
-                        DrawFill_2(i, j, 5)
+
                     else:
-                        pygame.draw.rect(screen, colorBlue, (i * cellSize + 5, j * cellSize + 3 * cellSize + 5, cellSize - 10, cellSize - 10),
+                        pygame.draw.rect(screen, colorWhite, (i * cellSize + 5, j * cellSize + 3 * cellSize + 5, cellSize - 9, cellSize - 9),
+                                         2)
+                        pygame.draw.rect(screen, colorWhite, (i * cellSize + 10, j * cellSize + 3 * cellSize + 10, cellSize - 18, cellSize - 18),
                                          0)
-                        DrawFill_1(i, j, 5)
-                        DrawFill_2(i, j, 5)
 
     labelMove = myFont.render("Move", 1, colorWhite)
     screen.blit(labelMove, (0, 0, screenSize[0] / 3, cellSize))
@@ -171,8 +174,16 @@ def Draw():
 
     labelNext = myFont.render("Next", 1, colorWhite)
     screen.blit(labelNext, (0, cellSize * 2, screenSize[0] / 3, cellSize * 3))
-    screen.blit(myFont.render(str(currentNumber), 1, colorWhite),
-                (screenSize[0] / 3, cellSize * 2, cellSize, cellSize * 3))
+    if currentNumber > 2 * size:
+        pygame.draw.rect(screen, colorWhite, (screenSize[0] / 3 + 5, cellSize * 2 + 5, cellSize - 9, cellSize - 9),
+                         2)
+        pygame.draw.rect(screen, colorWhite, (screenSize[0] / 3 + 10, cellSize * 2 + 10, cellSize - 18, cellSize - 18),
+                         0)
+    else:
+        pygame.draw.rect(screen, palette[currentNumber - 1], (screenSize[0] / 3 + 5, cellSize * 2 + 5, cellSize - 9, cellSize - 9),
+                     0)
+        screen.blit(myFont.render(str(currentNumber), 1, colorWhite),
+                    (screenSize[0] / 3, cellSize * 2, cellSize, cellSize))
 
     labelRestart = myFont.render("Restart", 1, colorWhite)
     screen.blit(labelRestart, (screenSize[0] / 3, cellSize * 10.5, screenSize[0] / 3, cellSize * 11.5))
@@ -181,19 +192,6 @@ def Draw():
 
     pygame.display.flip()
 
-
-def DrawFill_1(x, y, size):
-    for k in range(size):
-        r = k * (cellSize - 10) / size
-        pygame.draw.line(screen, colorWhite, (x * cellSize + 5 + r, (y + 3) * cellSize + 5), ((x + 1) * cellSize - 5, (y + 4) * cellSize - r - 5), 2)
-        pygame.draw.line(screen, colorWhite, (x * cellSize + 5, (y + 3) * cellSize + 5 + r), ((x + 1) * cellSize - r - 5, (y + 4) * cellSize - 5), 2)
-
-
-def DrawFill_2(x, y, size):
-    for k in range(size):
-        r = (size - k) * (cellSize - 10) / size
-        pygame.draw.line(screen, colorWhite, (x * cellSize - 5 + r, (y + 3) * cellSize + 5), (x * cellSize + 5, (y + 3) * cellSize - 5 + r), 2)
-        pygame.draw.line(screen, colorWhite, ((x + 1) * cellSize - 5, (y + 4) * cellSize + 5 - r), ((x + 1) * cellSize + 5 - r, (y + 4) * cellSize - 5), 2)
 
 Update = None
 pos = None
