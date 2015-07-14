@@ -5,6 +5,34 @@ import time
 import sys
 import random
 
+class Score:
+    score = 0
+    bestScore = 0
+    fileName = 'bestscore.txt'
+
+    def __init__(self):
+        try:
+            f = open(self.fileName, 'r')
+            self.bestScore = int(f.read())
+        finally:
+            try:
+                f.close()
+            except:
+                pass
+
+    def Clear(self):
+        self.score = 0
+
+    def Increase(self):
+        self.score += 1
+        if self.score > self.bestScore:
+            self.bestScore = self.score
+            f = open(self.fileName, 'w')
+            f.write(str(self.bestScore))
+            f.close()
+
+
+
 pygame.init()
 pygame.display.set_caption("Numbers")
 screenSize = (351, 600)
@@ -23,8 +51,7 @@ for x in range(size):
 currentNumber = random.randint(1, size)
 
 moveCount = 10
-score = 0
-bestScore = 0
+score = Score()
 
 colorWhite = (255, 255, 255)
 colorRed = (255, 0, 0)
@@ -53,7 +80,7 @@ def AddNumber(x):
     j = 0
     if gameTable[i][j] == 0:
         gameTable[i][j] = currentNumber
-        if score > 0 and score % 10 == 0:
+        if random.random() < 0.05:
             currentNumber = 2 * size + random.randint(1, size)
         else:
             currentNumber = random.randint(1, size)
@@ -119,7 +146,7 @@ def Delete(delTable):
         for j in range(size):
             if delTable[i][j] != 0:
                 gameTable[i][j] = 0
-                score += 1
+                score.Increase()
                 if i > 0 and gameTable[i - 1][j] > size:
                     gameTable[i - 1][j] -= size
                 if i < size - 1 and gameTable[i + 1][j] > size:
@@ -145,13 +172,11 @@ def ShiftDown():
 
 
 def Restart():
-    global score, bestScore, moveCount, endGame
+    global score, moveCount, endGame
     for i in range(size):
         for j in range(size):
             gameTable[i][j] = 0
-    if score > bestScore:
-        bestScore = score
-    score = 0
+    score.Clear()
     moveCount = 10
     endGame = False
 
@@ -177,17 +202,16 @@ def Draw():
                         pygame.draw.rect(screen, colorWhite, (
                             i * cellSize + 10, j * cellSize + headerH + 10, cellSize - 18, cellSize - 18), 0)
 
-
     DrawElement(labelMove, pygame.Rect(0, 0, screenW / 3, headerH / 3))
     textMove = myFont.render(str(moveCount), 1, colorWhite)
     DrawElement(textMove, pygame.Rect(0, headerH / 3, screenW / 3, headerH / 3))
 
     DrawElement(labelScore, pygame.Rect(screenW / 3, 0, screenW / 3, headerH / 3))
-    textScore = myFont.render(str(score), 1, colorWhite)
+    textScore = myFont.render(str(score.score), 1, colorWhite)
     DrawElement(textScore, pygame.Rect(screenW / 3, headerH / 3, screenW / 3, headerH / 3))
 
     DrawElement(labelRecord, pygame.Rect(screenW * 2 / 3, 0, screenW / 3, headerH / 3))
-    textRecord = myFont.render(str(bestScore), 1, colorWhite)
+    textRecord = myFont.render(str(score.bestScore), 1, colorWhite)
     DrawElement(textRecord, pygame.Rect(screenW * 2 / 3, headerH / 3, screenW / 3, headerH / 3))
 
     DrawElement(labelNext, pygame.Rect(0, 2 * headerH / 3, screenW / 3, headerH / 3))
@@ -223,6 +247,10 @@ def DrawEndGame():
     loc = text.get_rect()
     loc.center = screen.get_rect().center
     screen.blit(text, loc)
+
+
+def HowToPlay():
+    pass
 
 
 Update = None
@@ -278,8 +306,10 @@ while True:
             if event.button == 1:
                 e = True
                 pos = event.pos
-                if 2 * cellSize < event.pos[0] < 5 * cellSize and 10.4 * cellSize < event.pos[1] < 11.4 * cellSize:
+                if screenW / 3 < pos[0] < 2 * screenW / 3 and screenSize[1] - 2 * footerH / 3 < pos[1] < screenSize[1] - footerH / 3:
                     Restart()
+                if 0 < pos[0] < screenW / 3 and screenSize[1] - 2 * footerH / 3 < pos[1] < screenSize[1] - footerH / 3:
+                    HowToPlay()
     Update()
     Draw()
 
