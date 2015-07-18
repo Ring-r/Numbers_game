@@ -35,7 +35,7 @@ class Score:
 
 pygame.init()
 pygame.display.set_caption("Numbers")
-screenSize = (351, 600)
+screenSize = (350, 600)
 screen = pygame.display.set_mode(screenSize, 0, 32)
 
 screenW = screenSize[0]
@@ -72,7 +72,7 @@ for i in range(size):
     numbers[i] = myFont.render(str(i + 1), 10, colorBlack)
 
 endGame = False
-
+pause = False
 
 def AddNumber(x):
     global currentNumber, moveCount
@@ -83,7 +83,10 @@ def AddNumber(x):
         if random.random() < 0.05:
             currentNumber = 2 * size + random.randint(1, size)
         else:
-            currentNumber = random.randint(1, size)
+            if random.random() < 0.2:
+                currentNumber = 100
+            else:
+                currentNumber = random.randint(1, size)
         moveCount -= 1
 
 
@@ -133,11 +136,39 @@ def CreateDelTable():
 
     for i in range(size):
         for j in range(size):
-            if gameTable[i][j] != 0 and (gameTable[i][j] == rowElCount[i] or gameTable[i][j] == colElCount[j]):
+            if gameTable[i][j] != 0 and (gameTable[i][j] == rowElCount[i] or gameTable[i][j] == colElCount[j] or gameTable[i][j] == 100):
                 delTable[i][j] = 1
                 notNull = True
 
     return notNull, delTable
+
+
+def DeleteBomb(i, j):
+    gameTable[i][j] = 0
+    if i > 0:
+        if gameTable[i - 1][j] > size:
+            gameTable[i - 1][j] -= size
+        else:
+            gameTable[i - 1][j] = 0
+            score.Increase()
+    if i < size - 1:
+        if gameTable[i + 1][j] > size:
+            gameTable[i + 1][j] -= size
+        else:
+            gameTable[i + 1][j] = 0
+            score.Increase()
+    if j > 0:
+        if gameTable[i][j - 1] > size:
+            gameTable[i][j - 1] -= size
+        else:
+            gameTable[i][j - 1]
+            score.Increase()
+    if j < size - 1:
+        if gameTable[i][j + 1] > size:
+            gameTable[i][j + 1] -= size
+        else:
+            gameTable[i][j + 1] = 0
+            score.Increase()
 
 
 def Delete(delTable):
@@ -145,16 +176,19 @@ def Delete(delTable):
     for i in range(size):
         for j in range(size):
             if delTable[i][j] != 0:
-                gameTable[i][j] = 0
+                if gameTable[i][j] == 100:
+                    DeleteBomb(i, j)
+                else:
+                    gameTable[i][j] = 0
+                    if i > 0 and gameTable[i - 1][j] > size:
+                        gameTable[i - 1][j] -= size
+                    if i < size - 1 and gameTable[i + 1][j] > size:
+                        gameTable[i + 1][j] -= size
+                    if j > 0 and gameTable[i][j - 1] > size:
+                        gameTable[i][j - 1] -= size
+                    if j < size - 1 and gameTable[i][j + 1] > size:
+                        gameTable[i][j + 1] -= size
                 score.Increase()
-                if i > 0 and gameTable[i - 1][j] > size:
-                    gameTable[i - 1][j] -= size
-                if i < size - 1 and gameTable[i + 1][j] > size:
-                    gameTable[i + 1][j] -= size
-                if j > 0 and gameTable[i][j - 1] > size:
-                    gameTable[i][j - 1] -= size
-                if j < size - 1 and gameTable[i][j + 1] > size:
-                    gameTable[i][j + 1] -= size
 
 
 
@@ -185,7 +219,8 @@ def Draw():
     screen.fill(colorBlack)
     for i in range(size):
         for j in range(size):
-            pygame.draw.rect(screen, colorWhite, (i * cellSize, j * cellSize + headerH, cellSize, cellSize), 2)
+            pygame.draw.rect(screen, colorWhite, (i * cellSize, j * cellSize + headerH, cellSize, cellSize), 1)
+            pygame.draw.rect(screen, colorBlue, (i * cellSize + 1, j * cellSize + headerH + 1, cellSize, cellSize), 1)
             if gameTable[i][j] != 0:
                 if gameTable[i][j] <= size:
                     pygame.draw.rect(screen, palette[gameTable[i][j] - 1],
@@ -193,14 +228,17 @@ def Draw():
                     DrawElement(numbers[gameTable[i][j] - 1], pygame.Rect(i * cellSize, j * cellSize + headerH, cellSize, cellSize))
 
                 else:
-                    if gameTable[i][j] <= 2 * size:
-                        pygame.draw.rect(screen, colorWhite, (
-                            i * cellSize + 5, j * cellSize + headerH + 5, cellSize - 9, cellSize - 9), 0)
+                    if gameTable[i][j] == 100:
+                        pygame.draw.ellipse(screen, colorRed, (i * cellSize + 5, j * cellSize + headerH + 5, cellSize - 9, cellSize - 9), 0)
                     else:
-                        pygame.draw.rect(screen, colorWhite, (
-                            i * cellSize + 5, j * cellSize + headerH + 5, cellSize - 9, cellSize - 9), 2)
-                        pygame.draw.rect(screen, colorWhite, (
-                            i * cellSize + 10, j * cellSize + headerH + 10, cellSize - 18, cellSize - 18), 0)
+                        if gameTable[i][j] <= 2 * size:
+                            pygame.draw.rect(screen, colorWhite, (
+                                i * cellSize + 5, j * cellSize + headerH + 5, cellSize - 9, cellSize - 9), 0)
+                        else:
+                            pygame.draw.rect(screen, colorWhite, (
+                                i * cellSize + 5, j * cellSize + headerH + 5, cellSize - 9, cellSize - 9), 2)
+                            pygame.draw.rect(screen, colorWhite, (
+                                i * cellSize + 10, j * cellSize + headerH + 10, cellSize - 18, cellSize - 18), 0)
 
     DrawElement(labelMove, pygame.Rect(0, 0, screenW / 3, headerH / 3))
     textMove = myFont.render(str(moveCount), 1, colorWhite)
@@ -215,19 +253,26 @@ def Draw():
     DrawElement(textRecord, pygame.Rect(screenW * 2 / 3, headerH / 3, screenW / 3, headerH / 3))
 
     DrawElement(labelNext, pygame.Rect(0, 2 * headerH / 3, screenW / 3, headerH / 3))
-    if currentNumber > 2 * size:
+    if currentNumber == 100:
         pygame.draw.rect(screen, colorWhite, (screenW / 3 + 5, 2 * headerH / 3 + 5, cellSize - 9, cellSize - 9), 2)
-        pygame.draw.rect(screen, colorWhite, (screenW / 3 + 10, 2 * headerH / 3 + 10, cellSize - 18, cellSize - 18), 0)
+        pygame.draw.ellipse(screen, colorRed,(screenW / 3 + 10, 2 * headerH / 3 + 10, cellSize - 18, cellSize - 18), 0)
     else:
-        pygame.draw.rect(screen, palette[currentNumber - 1],
-                         (screenW / 3 + 5, 2 * headerH / 3 + 5, cellSize - 9, cellSize - 9), 0)
-        DrawElement(numbers[currentNumber - 1], pygame.Rect(screenW / 3, 2 * headerH / 3, cellSize, cellSize))
+        if currentNumber > 2 * size:
+            pygame.draw.rect(screen, colorWhite, (screenW / 3 + 5, 2 * headerH / 3 + 5, cellSize - 9, cellSize - 9), 2)
+            pygame.draw.rect(screen, colorWhite, (screenW / 3 + 10, 2 * headerH / 3 + 10, cellSize - 18, cellSize - 18), 0)
+        else:
+            pygame.draw.rect(screen, palette[currentNumber - 1],
+                             (screenW / 3 + 5, 2 * headerH / 3 + 5, cellSize - 9, cellSize - 9), 0)
+            DrawElement(numbers[currentNumber - 1], pygame.Rect(screenW / 3, 2 * headerH / 3, cellSize, cellSize))
 
     DrawElement(labelTutor, pygame.Rect(0, screenSize[1] - footerH, screenW / 3, footerH))
     DrawElement(labelRestart, pygame.Rect(0, screenSize[1] - footerH, screenW, footerH))
 
     if endGame:
         DrawEndGame()
+
+    if pause:
+        DrawAbout()
 
     pygame.display.flip()
 
@@ -238,10 +283,10 @@ def DrawElement(text, rect):
 
 
 def DrawEndGame():
-    overlay = pygame.Surface((screenSize[0], 200))
+    overlay = pygame.Surface((screenW, screenW))
     overlay.set_alpha(200)
     overlay.fill((255, 255, 255))
-    screen.blit(overlay, (0, screenSize[1] / 3))
+    screen.blit(overlay, (0, headerH))
 
     text = myFont.render("Game Over!", 1, colorBlack, colorWhite)
     loc = text.get_rect()
@@ -249,8 +294,16 @@ def DrawEndGame():
     screen.blit(text, loc)
 
 
-def HowToPlay():
-    pass
+def DrawAbout():
+    overlay = pygame.Surface((screenW, screenW))
+    overlay.set_alpha(200)
+    overlay.fill((255, 255, 255))
+    screen.blit(overlay, (0, headerH))
+
+    text = myFont.render("Play on!", 1, colorBlack, colorWhite)
+    loc = text.get_rect()
+    loc.center = screen.get_rect().center
+    screen.blit(text, loc)
 
 
 Update = None
@@ -309,7 +362,7 @@ while True:
                 if screenW / 3 < pos[0] < 2 * screenW / 3 and screenSize[1] - 2 * footerH / 3 < pos[1] < screenSize[1] - footerH / 3:
                     Restart()
                 if 0 < pos[0] < screenW / 3 and screenSize[1] - 2 * footerH / 3 < pos[1] < screenSize[1] - footerH / 3:
-                    HowToPlay()
+                    pause = not pause
     Update()
     Draw()
 
