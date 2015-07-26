@@ -1,9 +1,11 @@
 # !/usr/bin/python
 
 import pygame
+import pygame.gfxdraw
 import time
 import sys
 import random
+import math
 
 class Score:
     score = 0
@@ -240,6 +242,8 @@ def Draw():
                             pygame.draw.rect(screen, colorWhite, (
                                 i * cellSize + 10, j * cellSize + headerH + 10, cellSize - 18, cellSize - 18), 0)
 
+    DrawRing((0, 0), screenSize, size)
+
     DrawElement(labelMove, pygame.Rect(0, 0, screenW / 3, headerH / 3))
     textMove = myFont.render(str(moveCount), 1, colorWhite)
     DrawElement(textMove, pygame.Rect(0, headerH / 3, screenW / 3, headerH / 3))
@@ -305,6 +309,36 @@ def DrawAbout():
     loc.center = screen.get_rect().center
     screen.blit(text, loc)
 
+def DrawPie(screen, x, y, r0, r1, a0, a1, color, width = 0):
+    a0 = (int)(a0)
+    a1 = (int)(a1)
+    toRad = 2 * math.pi / 360
+    points = []
+    for a in range(a0, a1, +1):
+        points.append(((int)(x + r0 * math.cos(a * toRad)), (int)(y + r0 * math.sin(a * toRad))))
+    for a in range(a1, a0, -1):
+        points.append(((int)(x + r1 * math.cos(a * toRad)), (int)(y + r1 * math.sin(a * toRad))))
+    pygame.draw.polygon(screen, color, points, width)
+
+def DrawRing(pos, size, count):
+    #screen.fill(colorBlack)
+    center = (pos[0] + size[0] / 2, pos[1] + size[1] / 2)
+    angleStep = 360.0 / count
+    radiusStep = min(size[0], size[1]) / (2 * count + 2)
+    angle = 0
+    for i in range(count):
+        radius = radiusStep
+        for j in range(count):
+            cellData = gameTable[i][j]
+            color = (0, 0, 0)
+            if (0 < cellData <= count):
+                color = palette[cellData - 1]
+            if (cellData > count):
+                color = (128, 128, 128)
+            DrawPie(screen, center[0], center[1], radius, radius + radiusStep, angle, angle + angleStep, color)
+            DrawPie(screen, center[0], center[1], radius, radius + radiusStep, angle, angle + angleStep, colorWhite, 1)
+            radius += radiusStep
+        angle += angleStep
 
 Update = None
 pos = None
