@@ -316,15 +316,15 @@ def GetCurrentPieIndex(pos, size, count, coor):
     index = (int)math.ceil(angle / angleStep)
     return index
 
-def DrawPie(screen, x, y, r0, r1, a0, a1, color, width = 0):
+def DrawPie(screen, center, r0, r1, a0, a1, color, width = 0):
     a0 = (int)(a0)
     a1 = (int)(a1)
     toRad = 2 * math.pi / 360
     points = []
     for a in range(a0, a1, +1):
-        points.append(((int)(x + r0 * math.cos(a * toRad)), (int)(y + r0 * math.sin(a * toRad))))
+        points.append(((int)(center[0] + r0 * math.cos(a * toRad)), (int)(center[1] + r0 * math.sin(a * toRad))))
     for a in range(a1, a0, -1):
-        points.append(((int)(x + r1 * math.cos(a * toRad)), (int)(y + r1 * math.sin(a * toRad))))
+        points.append(((int)(center[0] + r1 * math.cos(a * toRad)), (int)(center[1] + r1 * math.sin(a * toRad))))
     pygame.draw.polygon(screen, color, points, width)
 
 def DrawRing(pos, size, count):
