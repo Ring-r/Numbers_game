@@ -309,6 +309,13 @@ def DrawAbout():
     loc.center = screen.get_rect().center
     screen.blit(text, loc)
 
+def GetCurrentPieIndex(pos, size, count, coor):
+    center = (pos[0] + size[0] / 2, pos[1] + size[1] / 2)
+    angle = math.atan2(coor[1] - center[1], coor[0] - center[0])
+    angleStep = math.pi / count
+    index = (int)math.ceil(angle / angleStep)
+    return index
+
 def DrawPie(screen, x, y, r0, r1, a0, a1, color, width = 0):
     a0 = (int)(a0)
     a1 = (int)(a1)
@@ -321,7 +328,6 @@ def DrawPie(screen, x, y, r0, r1, a0, a1, color, width = 0):
     pygame.draw.polygon(screen, color, points, width)
 
 def DrawRing(pos, size, count):
-    #screen.fill(colorBlack)
     center = (pos[0] + size[0] / 2, pos[1] + size[1] / 2)
     angleStep = 360.0 / count
     radiusStep = min(size[0], size[1]) / (2 * count + 2)
