@@ -316,20 +316,27 @@ def GetCurrentPieIndex(pos, size, count, coor):
     index = (int)math.ceil(angle / angleStep)
     return index
 
+degree = math.pi / 180
 def DrawPie(screen, center, r0, r1, a0, a1, color, width = 0):
-    a0 = (int)(a0)
-    a1 = (int)(a1)
-    toRad = 2 * math.pi / 360
     points = []
-    for a in range(a0, a1, +1):
-        points.append(((int)(center[0] + r0 * math.cos(a * toRad)), (int)(center[1] + r0 * math.sin(a * toRad))))
-    for a in range(a1, a0, -1):
-        points.append(((int)(center[0] + r1 * math.cos(a * toRad)), (int)(center[1] + r1 * math.sin(a * toRad))))
+    
+    a = a0
+    while a < a1:
+        points.append((int)(center[0] + r0 * math.cos(a)), (int)(center[0] + r0 * math.sin(a)))
+        a += degree
+    points.append((int)(center[0] + r0 * math.cos(a1)), (int)(center[0] + r0 * math.sin(a1)))
+    
+    a = a1
+    while a > a0:
+        points.append((int)(center[0] + r0 * math.cos(a)), (int)(center[0] + r0 * math.sin(a)))
+        a -= degree
+    points.append((int)(center[0] + r0 * math.cos(a0)), (int)(center[0] + r0 * math.sin(a0)))
+    
     pygame.draw.polygon(screen, color, points, width)
 
 def DrawRing(pos, size, count):
     center = (pos[0] + size[0] / 2, pos[1] + size[1] / 2)
-    angleStep = 360.0 / count
+    angleStep = 2 * math.pi / count
     radiusStep = min(size[0], size[1]) / (2 * count + 2)
     angle = 0
     for i in range(count):
@@ -341,8 +348,8 @@ def DrawRing(pos, size, count):
                 color = palette[cellData - 1]
             if (cellData > count):
                 color = (128, 128, 128)
-            DrawPie(screen, center[0], center[1], radius, radius + radiusStep, angle, angle + angleStep, color)
-            DrawPie(screen, center[0], center[1], radius, radius + radiusStep, angle, angle + angleStep, colorWhite, 1)
+            DrawPie(screen, center, radius, radius + radiusStep, angle, angle + angleStep, color)
+            DrawPie(screen, center, radius, radius + radiusStep, angle, angle + angleStep, colorWhite, 1)
             radius += radiusStep
         angle += angleStep
 
