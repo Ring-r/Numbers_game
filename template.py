@@ -328,9 +328,9 @@ def DrawPie(screen, center, r0, r1, a0, a1, color, width = 0):
     
     a = a1
     while a > a0:
-        points.append((int)(center[0] + r0 * math.cos(a)), (int)(center[0] + r0 * math.sin(a)))
+        points.append((int)(center[0] + r1 * math.cos(a)), (int)(center[0] + r1 * math.sin(a)))
         a -= degree
-    points.append((int)(center[0] + r0 * math.cos(a0)), (int)(center[0] + r0 * math.sin(a0)))
+    points.append((int)(center[0] + r1 * math.cos(a0)), (int)(center[0] + r1 * math.sin(a0)))
     
     pygame.draw.polygon(screen, color, points, width)
 
