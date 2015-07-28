@@ -76,6 +76,9 @@ for i in range(size):
 endGame = False
 pause = False
 
+ring = Ring()
+ring.update((0, 0), screenSize, size)
+
 def AddNumber(x):
     global currentNumber, moveCount
     i = int(x / cellSize)
@@ -242,7 +245,7 @@ def Draw():
                             pygame.draw.rect(screen, colorWhite, (
                                 i * cellSize + 10, j * cellSize + headerH + 10, cellSize - 18, cellSize - 18), 0)
 
-    DrawRing((0, 0), screenSize, size)
+    ring.draw(screen, gameTable, size, palette)
 
     DrawElement(labelMove, pygame.Rect(0, 0, screenW / 3, headerH / 3))
     textMove = myFont.render(str(moveCount), 1, colorWhite)
@@ -309,49 +312,55 @@ def DrawAbout():
     loc.center = screen.get_rect().center
     screen.blit(text, loc)
 
-def GetCurrentPieIndex(pos, size, count, coor):
-    center = (pos[0] + size[0] / 2, pos[1] + size[1] / 2)
-    angle = math.atan2(coor[1] - center[1], coor[0] - center[0])
-    angleStep = math.pi / count
-    index = (int)math.ceil(angle / angleStep)
-    return index
+class Ring:
+	degree = math.pi / 180
+	
+	def update(self, pos, size, count):
+		self.center = (pos[0] + size[0] / 2, pos[1] + size[1] / 2)
+		self.angleStep = 2 * math.pi / count
+    	self.radiusStep = min(size[0], size[1]) / (2 * count + 2)
+    	self.current_pie_index = -1
 
-degree = math.pi / 180
-def DrawPie(screen, center, r0, r1, a0, a1, color, width = 0):
-    points = []
-    
-    a = a0
-    while a < a1:
-        points.append((int)(center[0] + r0 * math.cos(a)), (int)(center[0] + r0 * math.sin(a)))
-        a += degree
-    points.append((int)(center[0] + r0 * math.cos(a1)), (int)(center[0] + r0 * math.sin(a1)))
-    
-    a = a1
-    while a > a0:
-        points.append((int)(center[0] + r1 * math.cos(a)), (int)(center[0] + r1 * math.sin(a)))
-        a -= degree
-    points.append((int)(center[0] + r1 * math.cos(a0)), (int)(center[0] + r1 * math.sin(a0)))
-    
-    pygame.draw.polygon(screen, color, points, width)
+	def update_current_pie_index(self, coor):
+    	angle = math.atan2(coor[1] - self.center[1], coor[0] - self.center[0])
+    	self.current_pie_index = (int)math.ceil(angle / self.angleStep)
 
-def DrawRing(pos, size, count):
-    center = (pos[0] + size[0] / 2, pos[1] + size[1] / 2)
-    angleStep = 2 * math.pi / count
-    radiusStep = min(size[0], size[1]) / (2 * count + 2)
-    angle = 0
-    for i in range(count):
-        radius = radiusStep
-        for j in range(count):
-            cellData = gameTable[i][j]
-            color = (0, 0, 0)
-            if (0 < cellData <= count):
-                color = palette[cellData - 1]
-            if (cellData > count):
-                color = (128, 128, 128)
-            DrawPie(screen, center, radius, radius + radiusStep, angle, angle + angleStep, color)
-            DrawPie(screen, center, radius, radius + radiusStep, angle, angle + angleStep, colorWhite, 1)
-            radius += radiusStep
-        angle += angleStep
+	def get_pie_points(self, a0, a1, r0, r1):
+    	points = []
+    
+    	a = a0
+    	while a < a1:
+        	points.append((int)(self.center[0] + r0 * math.cos(a)), (int)(self.center[1] + r0 * math.sin(a)))
+        	a += degree
+    	points.append((int)(self.center[0] + r0 * math.cos(a1)), (int)(self.center[1] + r0 * math.sin(a1)))
+    
+    	a = a1
+    	while a > a0:
+        	points.append((int)(center[0] + r1 * math.cos(a)), (int)(center[1] + r1 * math.sin(a)))
+        	a -= degree
+    	points.append((int)(self.center[0] + r1 * math.cos(a0)), (int)(self.center[1] + r1 * math.sin(a0)))
+    
+    	return points
+
+	def draw(self, screen, gameTable, count, palette):
+    	angle = 0
+    	for i in range(count):
+        	radius = self.radiusStep
+        	for j in range(count):
+                points = self.get_pie_points(angle, angle + angleStep, radius, radius + radiusStep)
+            	cellData = gameTable[i][j]
+            	cell_color = (0, 0, 0)
+            	if (0 < cellData <= count):
+                	cell_color = palette[cellData - 1]
+            	if (count < cellData):
+                	cell_color = (128, 128, 128)
+                pygame.draw.polygon(screen, cell_color, points)
+                border_color = (200, 200, 200)
+                if (i == self.current_pie_index):
+                	border_color = (255, 255, 255)
+                pygame.draw.polygon(screen, border_color, points, 1)
+            	radius += self.radiusStep
+        	angle += self.angleStep
 
 Update = None
 pos = None
@@ -363,6 +372,7 @@ def UpdateAdd():
         if 10 * cellSize > pos[1] > 3 * cellSize:
             if not endGame:
                 AddNumber(pos[0])
+                ring.update_current_pie_index(pos)
                 Update = UpdateShift
     pos = None
 
