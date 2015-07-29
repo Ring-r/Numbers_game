@@ -342,25 +342,40 @@ class Ring:
     
     	return points
 
-	def draw(self, screen, gameTable, count, palette):
+	def draw(self, screen, gameTable, palette):
+    	count = len(gameTable)
     	angle = 0
     	for i in range(count):
         	radius = self.radiusStep
         	for j in range(count):
                 points = self.get_pie_points(angle, angle + angleStep, radius, radius + radiusStep)
-            	cellData = gameTable[i][j]
+            	cell_data = gameTable[i][j]
+            	# TODO: cell_color = style.get_cell_color(cell_data)
             	cell_color = (0, 0, 0)
-            	if (0 < cellData <= count):
-                	cell_color = palette[cellData - 1]
-            	if (count < cellData):
+            	if (1 < cell_data <= len(palette)):
+                	cell_color = palette[cell_data - 1]
+            	if (len(palette) < cell_data):
                 	cell_color = (128, 128, 128)
                 pygame.draw.polygon(screen, cell_color, points)
+                # TODO: border_color = style.get_border_color(i == self.current_pie_index)
                 border_color = (200, 200, 200)
                 if (i == self.current_pie_index):
                 	border_color = (255, 255, 255)
                 pygame.draw.polygon(screen, border_color, points, 1)
             	radius += self.radiusStep
         	angle += self.angleStep
+
+	def draw(self, screen, currentNumber, palette):
+		# TODO: cell_color = style.get_cell_color(currentNumber)
+		cell_color = (0, 0, 0)
+		if (1 < cell_data <= len(palette)):
+			cell_color = palette[cell_data - 1]
+		if (len(palette) < cell_data):
+			cell_color = (128, 128, 128)
+		pygame.draw.circle(screen, self.center, self.radiusStep, cell_color)
+		# TODO: border_color = style.get_border_color(true)
+		border_color = (255, 255, 255)
+		pygame.draw.circle(screen, self.center, self.radiusStep, cell_color, 1)
 
 Update = None
 pos = None
